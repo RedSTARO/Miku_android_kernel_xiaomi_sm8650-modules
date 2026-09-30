@@ -12,6 +12,7 @@
 #include "main.h"
 #include "qmi.h"
 #include "genl.h"
+#include "hwid.h"
 
 #define WLFW_SERVICE_INS_ID_V01		1
 #define WLFW_CLIENT_ID			0x4b4e454c
@@ -20,13 +21,27 @@
 #define ELF_BDF_FILE_NAME_GF		"bdwlang.elf"
 #define ELF_BDF_FILE_NAME_PREFIX	"bdwlan.e"
 #define ELF_BDF_FILE_NAME_GF_PREFIX	"bdwlang.e"
+#define ELF_BDF_FILE_NAME_N2		"bd_n2.elf"
+#define ELF_BDF_FILE_NAME_N2_GLOBAL	"bd_n2gl.elf"
+#define ELF_BDF_FILE_NAME_N2_INDIA	"bd_n2in.elf"
+#define ELF_BDF_FILE_NAME_N3		"bd_n3.elf"
+#define ELF_BDF_FILE_NAME_N3_GLOBAL	"bd_n3gl.elf"
+#define ELF_BDF_FILE_NAME_N3_INDIA	"bd_n3in.elf"
 #define BIN_BDF_FILE_NAME		"bdwlan.bin"
 #define BIN_BDF_FILE_NAME_GF		"bdwlang.bin"
 #define BIN_BDF_FILE_NAME_PREFIX	"bdwlan.b"
 #define BIN_BDF_FILE_NAME_GF_PREFIX	"bdwlang.b"
 #define REGDB_FILE_NAME			"regdb.bin"
+#define REGDB_FILE_NAME_XIAOMI		"regdb_xiaomi.bin"
 #define HDS_FILE_NAME			"hds.bin"
 #define CHIP_ID_GF_MASK			0x10
+
+/*
+ * Xiaomi hwid.project values passed by the bootloader on SM8650, as used by
+ * the stock cnss2/hwid modules (1 = shennong, 2 = houji).
+ */
+#define CNSS_HW_PROJECT_N2		1
+#define CNSS_HW_PROJECT_N3		2
 
 #define QDSS_TRACE_CONFIG_FILE		"qdss_trace_config"
 /*
@@ -699,6 +714,28 @@ static char *cnss_bdf_type_to_str(enum cnss_bdf_type bdf_type)
 	}
 }
 
+static const char *cnss_get_xiaomi_elf_bdf_file_name(void)
+{
+	u32 hw_country_ver = get_hw_country_version();
+
+	switch (get_hw_version_platform()) {
+	case CNSS_HW_PROJECT_N2:
+		if (hw_country_ver == (u32)CountryGlobal)
+			return ELF_BDF_FILE_NAME_N2_GLOBAL;
+		if (hw_country_ver == (u32)CountryIndia)
+			return ELF_BDF_FILE_NAME_N2_INDIA;
+		return ELF_BDF_FILE_NAME_N2;
+	case CNSS_HW_PROJECT_N3:
+		if (hw_country_ver == (u32)CountryGlobal)
+			return ELF_BDF_FILE_NAME_N3_GLOBAL;
+		if (hw_country_ver == (u32)CountryIndia)
+			return ELF_BDF_FILE_NAME_N3_INDIA;
+		return ELF_BDF_FILE_NAME_N3;
+	default:
+		return ELF_BDF_FILE_NAME;
+	}
+}
+
 static int cnss_get_bdf_file_name(struct cnss_plat_data *plat_priv,
 				  u32 bdf_type, char *filename,
 				  u32 filename_len)
@@ -714,8 +751,8 @@ static int cnss_get_bdf_file_name(struct cnss_plat_data *plat_priv,
 				snprintf(filename_tmp, filename_len,
 					 ELF_BDF_FILE_NAME_GF);
 			else
-				snprintf(filename_tmp, filename_len,
-					 ELF_BDF_FILE_NAME);
+				snprintf(filename_tmp, filename_len, "%s",
+					 cnss_get_xiaomi_elf_bdf_file_name());
 		} else if (plat_priv->board_info.board_id < 0xFF) {
 			if (plat_priv->chip_info.chip_id & CHIP_ID_GF_MASK)
 				snprintf(filename_tmp, filename_len,
@@ -757,7 +794,7 @@ static int cnss_get_bdf_file_name(struct cnss_plat_data *plat_priv,
 		}
 		break;
 	case CNSS_BDF_REGDB:
-		snprintf(filename_tmp, filename_len, REGDB_FILE_NAME);
+		snprintf(filename_tmp, filename_len, REGDB_FILE_NAME_XIAOMI);
 		break;
 	case CNSS_BDF_HDS:
 		snprintf(filename_tmp, filename_len, HDS_FILE_NAME);

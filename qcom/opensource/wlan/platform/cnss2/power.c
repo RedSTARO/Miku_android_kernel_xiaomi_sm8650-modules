@@ -20,6 +20,13 @@
 #include "bus.h"
 #include <linux/soc/qcom/qcom_aoss.h>
 #include "pci_platform.h"
+#include "hwid.h"
+
+/*
+ * Xiaomi hwid.project value of aurora (N1) on SM8650. The stock driver only
+ * votes rf_clk on aurora build 1 boards with an odd minor revision.
+ */
+#define CNSS_HW_PROJECT_N1		4
 
 #if IS_ENABLED(CONFIG_ARCH_QCOM)
 static struct cnss_vreg_cfg cnss_vreg_list[] = {
@@ -671,6 +678,13 @@ int cnss_get_clk(struct cnss_plat_data *plat_priv)
 
 	if (!plat_priv)
 		return -ENODEV;
+
+	if (get_hw_version_platform() != CNSS_HW_PROJECT_N1 ||
+	    get_hw_version_build() != 1 ||
+	    !(get_hw_version_minor() & 1)) {
+		cnss_pr_dbg("No rf_clk to be voted by default\n");
+		return 0;
+	}
 
 	dev = &plat_priv->plat_dev->dev;
 	clk_list = &plat_priv->clk_list;

@@ -17,6 +17,9 @@ else
 ccflags-y += -I$(srctree)/drivers/net/wireless/cnss_utils
 endif
 
+# Xiaomi hwid.h for the get_hw_*() helpers exported by hwid.ko
+ccflags-y += -I$(srctree)/drivers/misc/hwid
+
 ifeq ($(CONFIG_CNSS_HW_SECURE_DISABLE), y)
 ccflags-y += -I$(WLAN_PLATFORM_ROOT)/../../securemsm-kernel/smcinvoke/
 ccflags-y += -I$(WLAN_PLATFORM_ROOT)/../../securemsm-kernel/linux/
