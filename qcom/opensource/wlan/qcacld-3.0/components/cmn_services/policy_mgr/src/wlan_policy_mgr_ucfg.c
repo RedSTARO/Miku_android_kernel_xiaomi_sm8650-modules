@@ -21,6 +21,13 @@
 #include "cfg_ucfg_api.h"
 #include "wlan_policy_mgr_api.h"
 #include "wlan_nan_api.h"
+#include "hwid.h"
+
+/*
+ * Xiaomi hwid.project value of aurora (N1), the only SM8650 project on which
+ * the stock driver keeps SBS enabled.
+ */
+#define PM_HW_PROJECT_N1 4
 
 #ifdef WLAN_FEATURE_SR
 /**
@@ -101,6 +108,12 @@ static QDF_STATUS policy_mgr_init_cfg(struct wlan_objmgr_psoc *psoc)
 		cfg_get(psoc, CFG_DUAL_MAC_FEATURE_DISABLE);
 	cfg->sbs_enable =
 		cfg_get(psoc, CFG_ENABLE_SBS);
+	if (get_hw_version_platform() == PM_HW_PROJECT_N1) {
+		policy_mgr_err("this is xbs project");
+	} else {
+		cfg->sbs_enable = false;
+		policy_mgr_err("this is non-xbs project");
+	}
 	cfg->is_force_1x1_enable =
 		cfg_get(psoc, CFG_FORCE_1X1_FEATURE);
 	cfg->sta_sap_scc_on_dfs_chnl =

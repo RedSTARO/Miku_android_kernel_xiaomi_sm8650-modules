@@ -39,6 +39,7 @@
 #include "wlan_vdev_mgr_utils_api.h"
 #include <wmi_unified_priv.h>
 #include <target_if.h>
+#include "hwid.h"
 
 #define NUM_OF_SOUNDING_DIMENSIONS     1 /*Nss - 1, (Nss = 2 for 2x2)*/
 
@@ -1632,6 +1633,12 @@ mlme_init_qos_edca_params(struct wlan_objmgr_psoc *psoc,
 
 	edca_params->edca_param_type =
 			cfg_get(psoc, CFG_EDCA_PIFS_PARAM_TYPE);
+
+	/* The gEdca* values in the ini are only meant for CN hardware */
+	if (get_hw_country_version() != (uint32_t)CountryCN) {
+		edca_params->enable_edca_params = false;
+		mlme_debug("set enable_edca_params 0 due to not CN build");
+	}
 }
 
 static void mlme_init_edca_params(struct wlan_objmgr_psoc *psoc,

@@ -3364,6 +3364,8 @@ INCS +=		$(COAP_WMI_INC)
 
 ccflags-y += $(INCS)
 
+ccflags-y += -I$(srctree)/drivers/misc/hwid
+
 ccflags-y += -include $(WLAN_ROOT)/configs/default_config.h
 ccflags-y += -include $(WLAN_ROOT)/../../dataipa/config/dataipa_vendor.h
 
