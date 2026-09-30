@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
  * Copyright (c) 2017-2021, The Linux Foundation. All rights reserved.
- * Copyright (c) 2022-2025, Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2022-2023, Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #ifndef _CAM_COMMON_UTIL_H_
@@ -30,7 +30,6 @@
 #define CAM_COMMON_IFE_NODE  "IFE"
 #define CAM_COMMON_ICP_NODE  "IPE"
 #define CAM_COMMON_JPEG_NODE "JPEG"
-#define CAM_COMMON_TFE_NODE "TFE"
 
 #define CAM_COMMON_NS_PER_MS              1000000ULL
 
@@ -85,26 +84,6 @@
 	rem_jiffies;                                                                         \
 })
 
-/*
- * manage locking between process context and tasklets.
- * use appropriate api based on current context.
- */
-#define _SPIN_LOCK_PROCESS_TO_BH(lock)          \
-({                                              \
-		if (in_task())			\
-			spin_lock_bh(lock);	\
-		else				\
-			spin_lock(lock);	\
-})                                              \
-
-#define _SPIN_UNLOCK_PROCESS_TO_BH(lock)        \
-({                                              \
-		if (in_task())			\
-			spin_unlock_bh(lock);	\
-		else				\
-			spin_unlock(lock);	\
-})                                              \
-
 typedef unsigned long (*cam_common_mini_dump_cb) (void *dst,
 	unsigned long len, void *priv_data);
 
@@ -145,8 +124,7 @@ enum cam_common_evt_inject_str_id_type {
 };
 
 enum cam_common_evt_inject_hw_id {
-	CAM_COMMON_EVT_INJECT_HW_IFE,
-	CAM_COMMON_EVT_INJECT_HW_TFE,
+	CAM_COMMON_EVT_INJECT_HW_ISP,
 	CAM_COMMON_EVT_INJECT_HW_ICP,
 	CAM_COMMON_EVT_INJECT_HW_JPEG,
 	CAM_COMMON_EVT_INJECT_HW_MAX
@@ -430,21 +408,24 @@ int cam_common_register_evt_inject_cb(
 	cam_common_evt_inject_cb evt_inject_cb,
 	enum cam_common_evt_inject_hw_id hw_id);
 
+// xiaomi add cam_retry_kcalloc
 /**
- * @brief:                 Memory alloc and copy
+ * cam_retry_kcalloc()
  *
- * @dst:                   Address of destination address of memory
- * @src:                   Source address of memory
- * @size:                  Length of memory
+ * @brief                  retry kcalloc
  *
- * @return                 0 if success in register non-zero if failes
+ * @func:                  the name of the function that called this function.
+ * @line:                  line of code.
+ * @n:                     how many bytes of memory are required.
+ * @s:                     how many bytes of memory are required.
+ * @flags:                 the type of memory to allocate (see kmalloc).
+ *
  */
-int cam_common_mem_kdup(void **dst, void *src, size_t size);
+void *cam_retry_kcalloc(
+	const char *func,
+	int line,
+	size_t n,
+	size_t s,
+	gfp_t gfp);
 
-/**
- * @brief:                 Free the memory
- *
- * @memory:                Address of memory
- */
-void cam_common_mem_free(void *memory);
 #endif /* _CAM_COMMON_UTIL_H_ */

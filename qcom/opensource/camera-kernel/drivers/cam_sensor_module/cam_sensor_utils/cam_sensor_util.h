@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
  * Copyright (c) 2017-2021, The Linux Foundation. All rights reserved.
- * Copyright (c) 2022-2025 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2022-2023 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #ifndef _CAM_SENSOR_UTIL_H_
@@ -34,6 +34,22 @@
 #define QTIMER_MUL_FACTOR   10000
 #define QTIMER_DIV_FACTOR   192
 
+// xiaomi add begin
+#define MAX_CCI_DEV         4
+#define MAX_MASTER_DEV      3
+struct skip_frame
+{
+	uint64_t req_id;
+	uint64_t skip_num;
+	bool     trigger_eof;
+};
+
+void init_power_sync_mutex(struct cam_sensor_cci_client *cci_client, int master);
+
+void lock_power_sync_mutex(struct cam_sensor_cci_client *cci_client, int master);
+
+void unlock_power_sync_mutex(struct cam_sensor_cci_client *cci_client, int master);
+// xiaomi add end
 int cam_sensor_count_elems_i3c_device_id(struct device_node *dev,
 	int *num_entries, char *sensor_id_table_str);
 
@@ -56,13 +72,13 @@ int32_t cam_sensor_handle_random_write(
 	struct cam_cmd_i2c_random_wr *cam_cmd_i2c_random_wr,
 	struct i2c_settings_array *i2c_reg_settings,
 	uint32_t *cmd_length_in_bytes, int32_t *offset,
-	struct list_head **list, uint32_t payload_count);
+	struct list_head **list);
 
 int32_t cam_sensor_handle_continuous_write(
 	struct cam_cmd_i2c_continuous_wr *cam_cmd_i2c_continuous_wr,
 	struct i2c_settings_array *i2c_reg_settings,
 	uint32_t *cmd_length_in_bytes, int32_t *offset,
-	struct list_head **list, uint32_t payload_count);
+	struct list_head **list);
 
 int32_t cam_sensor_handle_delay(
 	uint32_t **cmd_buf,
@@ -83,7 +99,7 @@ int32_t cam_sensor_handle_random_read(
 	uint16_t *cmd_length_in_bytes,
 	int32_t *offset,
 	struct list_head **list,
-	struct cam_buf_io_cfg *io_cfg, uint32_t payload_count);
+	struct cam_buf_io_cfg *io_cfg);
 
 int32_t cam_sensor_handle_continuous_read(
 	struct cam_cmd_i2c_continuous_rd *cmd_i2c_continuous_rd,
@@ -101,6 +117,10 @@ int cam_sensor_util_i2c_apply_setting(struct camera_io_master *io_master_info,
 	struct i2c_settings_list *i2c_list);
 
 int32_t cam_sensor_i2c_read_data(
+	struct i2c_settings_array *i2c_settings,
+	struct camera_io_master *io_master_info);
+
+int32_t cam_sensor_i2c_read_write_ois_data(
 	struct i2c_settings_array *i2c_settings,
 	struct camera_io_master *io_master_info);
 
@@ -142,4 +162,10 @@ static inline int cam_sensor_util_aon_registration(uint32_t phy_idx, uint32_t ao
 	return cam_csiphy_util_update_aon_registration(phy_idx, aon_camera_id);
 }
 
+//add by xiaomi
+int cam_hw_notify_v4l2_error_event( char *name, void *ctrl, uint32_t id,
+	uint32_t error_type, uint32_t error_code);
+
+uint32_t cam_hw_get_cci_ops(struct i2c_settings_list *i2c_list);
+//end
 #endif /* _CAM_SENSOR_UTIL_H_ */

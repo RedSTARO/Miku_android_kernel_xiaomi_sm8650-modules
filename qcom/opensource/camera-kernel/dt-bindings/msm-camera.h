@@ -118,6 +118,10 @@
 #define CAM_CPAS_SFE_FUSE 9
 #define CAM_CPAS_CUSTOM_FUSE 10
 #define CAM_CPAS_CAM_FUSE 11
+/*
+ * Not used by this driver, but sm8650-devicetrees' CAF cliffs camera DT still
+ * references it and includes this header (qcom/camera/Kbuild DTC_INCLUDE).
+ */
 #define CAM_CPAS_SHDR_FUSE 12
 #define CAM_CPAS_FUSE_FEATURE_MAX 13
 
